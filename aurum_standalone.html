@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>AURUM · NSE Intelligence Terminal</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐂</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C8982C;--ghi:#F0C84A;--glo:#6B5010;
+  --bg:#030405;--p1:#08090D;--p2:#0D0F15;
+  --ln:rgba(200,152,44,.09);--ln2:rgba(200,152,44,.28);
+  --tx:#C2BAA6;--txm:#686054;--txl:#302C24;
+  --gr:#38B86E;--rd:#CC4250;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;}
+body{font-family:'Barlow Condensed',sans-serif;color:var(--tx);display:flex;flex-direction:column;}
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#app{position:relative;z-index:10;display:flex;flex-direction:column;height:100%;overflow:hidden;}
+#top{flex-shrink:0;height:48px;display:flex;align-items:center;background:rgba(8,9,13,.95);border-bottom:1px solid var(--ln);backdrop-filter:blur(14px);z-index:30;}
+.tbrand{display:flex;flex-direction:column;justify-content:center;padding:0 18px;border-right:1px solid var(--ln);min-width:130px;}
+.tname{font-size:19px;font-weight:900;letter-spacing:6px;background:linear-gradient(110deg,#F0C84A,#C8982C,#6B5010);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.tsub{font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:3px;color:var(--txl);margin-top:2px;}
+.tidxrow{display:flex;flex:1;align-items:stretch;overflow:hidden;}
+.tidx{display:flex;flex-direction:column;justify-content:center;padding:0 12px;border-right:1px solid var(--ln);flex:1;min-width:0;}
+.tidxn{font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:1px;color:var(--txl);margin-bottom:1px;}
+.tidxv{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--tx);}
+.tidxc{font-family:'IBM Plex Mono',monospace;font-size:8px;margin-top:1px;}
+.tright{display:flex;align-items:center;gap:10px;padding:0 14px;border-left:1px solid var(--ln);flex-shrink:0;}
+.ldot{display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:1px;}
+.pdot{width:6px;height:6px;border-radius:50%;animation:bl 2s infinite;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.2}}
+.clk{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;letter-spacing:1px;color:var(--ghi);}
+#ticker{flex-shrink:0;height:24px;background:rgba(5,5,9,.97);border-bottom:1px solid var(--ln);overflow:hidden;display:flex;align-items:center;z-index:20;}
+.tt{display:flex;white-space:nowrap;animation:scr 50s linear infinite;}
+@keyframes scr{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{display:inline-flex;align-items:center;gap:5px;padding:0 14px;border-right:1px solid var(--ln);font-family:'IBM Plex Mono',monospace;font-size:9px;}
+.ts{color:var(--gold);font-weight:600;}
+.up{color:var(--gr);}.dn{color:var(--rd);}
+#mobnav{display:none;flex-shrink:0;background:rgba(8,9,13,.97);border-bottom:1px solid var(--ln);z-index:25;}
+.mobtabs{display:flex;}
+.mobtab{flex:1;padding:10px 4px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--txl);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.mobtab.act{color:var(--gold);border-bottom-color:var(--gold);}
+#ws{display:grid;grid-template-columns:244px 1fr 292px;flex:1;min-height:0;overflow:hidden;}
+#lp{border-right:1px solid var(--ln);background:rgba(8,9,13,.84);display:flex;flex-direction:column;overflow:hidden;}
+.lphdr{padding:9px 13px;border-bottom:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.lpttl{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:3px;color:var(--gold);}
+#lstatus{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--txl);}
+.srch{display:block;width:calc(100% - 22px);margin:7px 11px;padding:6px 9px;background:var(--p2);border:1px solid var(--ln);border-radius:3px;color:var(--tx);font-family:'IBM Plex Mono',monospace;font-size:11px;outline:none;flex-shrink:0;}
+.srch:focus{border-color:var(--ln2);}
+.srch::placeholder{color:var(--txl);}
+.slist{flex:1;overflow-y:auto;}
+.slist::-webkit-scrollbar{width:2px;}
+.slist::-webkit-scrollbar-thumb{background:var(--ln);}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;border-bottom:1px solid rgba(200,152,44,.03);transition:background .12s;position:relative;user-select:none;}
+.srow::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);opacity:0;transition:opacity .18s;}
+.srow:hover{background:rgba(200,152,44,.05);}
+.srow.sel{background:rgba(200,152,44,.08);}
+.srow.sel::before{opacity:1;}
+.ssym{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;color:var(--tx);}
+.snm{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--txl);margin-top:1px;}
+.spx{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-align:right;}
+.sch2{font-family:'IBM Plex Mono',monospace;font-size:8px;text-align:right;margin-top:1px;}
+.seclbl{padding:7px 13px 3px;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:3px;color:var(--txl);border-top:1px solid var(--ln);}
+.secrow{display:flex;align-items:center;justify-content:space-between;padding:3px 13px;font-family:'IBM Plex Mono',monospace;font-size:9px;}
+.secbar{height:2px;border-radius:1px;margin:0 13px 1px;}
+#cp{display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:rgba(3,4,5,.35);}
+#cp::-webkit-scrollbar{width:3px;}
+#cp::-webkit-scrollbar-thumb{background:var(--ln);}
+.cphdr{padding:16px 20px 12px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--ln);}
+.hsym{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;letter-spacing:3px;color:var(--tx);line-height:1;}
+.hnm{font-family:'Libre Baskerville',serif;font-size:11px;font-style:italic;color:var(--txm);margin-top:4px;}
+.hpx{font-family:'IBM Plex Mono',monospace;font-size:32px;font-weight:600;color:var(--ghi);letter-spacing:1px;text-align:right;line-height:1;}
+.hch{font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right;margin-top:4px;}
+.freshbar{display:flex;align-items:center;gap:6px;flex-shrink:0;margin:7px 20px;padding:4px 9px;background:var(--p1);border:1px solid var(--ln);border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--txm);letter-spacing:1px;}
+.fdot{width:5px;height:5px;border-radius:50%;}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);flex-shrink:0;border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);}
+.sc{padding:8px 10px;border-right:1px solid var(--ln);}
+.sc:last-child{border-right:none;}
+.scl{font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:2px;color:var(--txl);margin-bottom:3px;}
+.scv{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--tx);}
+.chartsec{padding:12px 18px 14px;flex-shrink:0;}
+.rrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.rngs{display:flex;gap:3px;flex-wrap:wrap;}
+.rb{padding:3px 9px;border:1px solid var(--ln);background:transparent;color:var(--txm);font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.rb:hover{border-color:var(--glo);color:var(--tx);}
+.rb.act{background:rgba(200,152,44,.1);border-color:var(--gold);color:var(--gold);}
+.cmeta{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:1px;color:var(--txl);}
+.cw{background:rgba(8,9,13,.9);border:1px solid var(--ln);border-radius:5px;padding:14px 14px 10px;position:relative;min-height:280px;}
+.cst{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--txl);gap:10px;text-align:center;padding:20px;pointer-events:none;z-index:2;}
+.mspin{width:18px;height:18px;border:2px solid var(--ln);border-top-color:var(--gold);border-radius:50%;animation:sp .85s linear infinite;}
+canvas#chart{display:block;width:100%!important;opacity:1;transition:opacity .25s ease;}
+canvas#chart.chart-loading{opacity:.35;}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skel-line{height:2px;border-radius:1px;background:linear-gradient(90deg,var(--ln) 25%,rgba(200,152,44,.18) 50%,var(--ln) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite linear;margin-bottom:5px;}
+#rp{border-left:1px solid var(--ln);background:rgba(8,9,13,.84);display:flex;flex-direction:column;overflow:hidden;}
+.rphdr{padding:11px 14px 9px;border-bottom:1px solid var(--ln);flex-shrink:0;}
+.rpttl{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:4px;background:linear-gradient(110deg,#F0C84A,#C8982C);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.rpsub{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--txl);margin-top:2px;}
+.ofbtn{display:block;margin:9px 12px;padding:10px;background:linear-gradient(135deg,rgba(200,152,44,.18),rgba(200,152,44,.06));border:1px solid var(--gold);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;cursor:pointer;border-radius:4px;transition:all .2s;width:calc(100% - 24px);flex-shrink:0;}
+.ofbtn:hover:not(:disabled){background:rgba(200,152,44,.22);box-shadow:0 0 20px rgba(200,152,44,.15);}
+.ofbtn:disabled{opacity:.38;cursor:not-allowed;}
+.rpbody{flex:1;overflow-y:auto;padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:13px;}
+.rpbody::-webkit-scrollbar{width:2px;}
+.rpbody::-webkit-scrollbar-thumb{background:var(--ln);}
+.est{color:var(--txm);font-family:'IBM Plex Mono',monospace;font-size:9px;line-height:2;padding:8px 4px;letter-spacing:.5px;}
+.verdict-box{border:1px solid;border-radius:5px;padding:10px 12px;margin-bottom:8px;text-align:center;}
+.verdict-lbl{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:3px;margin-bottom:4px;opacity:.7;}
+.verdict-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:4px;line-height:1;}
+.verdict-reason{font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--txm);margin-top:5px;letter-spacing:.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;}
+.stat-box{background:var(--p2);border:1px solid var(--ln);border-radius:4px;padding:7px 9px;}
+.stat-lbl{font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:2px;color:var(--txl);margin-bottom:3px;}
+.stat-val{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--tx);}
+.confid-row{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);margin-bottom:8px;}
+.section-lbl{font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:3px;color:var(--gold);margin:8px 0 4px;text-transform:uppercase;}
+.insight-box{background:var(--p2);border:1px solid var(--ln);border-radius:4px;padding:10px 11px;margin:6px 0;}
+.insight-lbl{font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:3px;color:var(--gold);margin-bottom:6px;}
+.insight-txt{font-family:'Barlow Condensed',sans-serif;font-size:14px;color:var(--tx);line-height:1.5;}
+.crsec{margin:6px 0;}
+.crttl{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:2px;margin-bottom:4px;}
+.crit{display:flex;align-items:flex-start;gap:7px;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--txm);}
+.dot4{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.disc{font-family:'IBM Plex Mono',monospace;font-size:6px;color:var(--txl);padding:8px 0 4px;letter-spacing:1px;border-top:1px solid var(--ln);margin-top:8px;}
+.nwsbox{background:rgba(200,152,44,.05);border:1px solid rgba(200,152,44,.15);border-radius:4px;padding:8px 10px;margin-bottom:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--txm);line-height:1.5;}
+.nwslbl{display:block;font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:3px;color:var(--gold);margin-bottom:5px;}
+.olod{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;text-align:center;}
+.spin{width:22px;height:22px;border:2px solid var(--ln);border-top-color:var(--gold);border-radius:50%;animation:sp .85s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes sp2{to{transform:rotate(360deg)}}
+@media(max-width:900px){
+  #ws{grid-template-columns:1fr;}
+  #mobnav{display:block;}
+  #lp{border-right:none;}
+  #rp{border-left:none;min-height:60vh;}
+  .mob-hidden{display:none!important;}
+  .slist{max-height:60vh;overflow-y:auto;}
+  .stats{grid-template-columns:repeat(3,1fr);}
+  .sc:nth-child(3){border-right:none;}
+  .sc:nth-child(n+4){border-top:1px solid var(--ln);}
+  .seclbl,.secrow,.secbar{display:none;}
+}
+@media(max-width:480px){
+  .hsym{font-size:24px;}
+  .hpx{font-size:22px;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+<canvas id="bgc"></canvas>
+<div id="app">
+  <header id="top">
+    <div class="tbrand"><div class="tname">AURUM</div><div class="tsub">NSE Terminal</div></div>
+    <div class="tidxrow">
+      <div class="tidx"><div class="tidxn">NIFTY 50</div><div class="tidxv" id="i0v">—</div><div class="tidxc" id="i0c">—</div></div>
+      <div class="tidx"><div class="tidxn">NIFTY BANK</div><div class="tidxv" id="i1v">—</div><div class="tidxc" id="i1c">—</div></div>
+      <div class="tidx"><div class="tidxn">NIFTY IT</div><div class="tidxv" id="i2v">—</div><div class="tidxc" id="i2c">—</div></div>
+      <div class="tidx"><div class="tidxn">NIFTY MIDCAP</div><div class="tidxv" id="i3v">—</div><div class="tidxc" id="i3c">—</div></div>
+      <div class="tidx"><div class="tidxn">INDIA VIX</div><div class="tidxv" id="i4v">—</div><div class="tidxc" id="i4c">—</div></div>
+      <div class="tidx" id="pulse-widget" style="border-left:1px solid var(--ln);padding-left:10px;min-width:90px;">
+        <div class="tidxn">MARKET PULSE</div>
+        <div class="tidxv" id="pulse-val" style="font-size:10px;letter-spacing:1px;">—</div>
+        <div class="tidxc" id="pulse-bar" style="height:2px;border-radius:1px;background:var(--ln);margin-top:2px;transition:all .5s;"></div>
+      </div>
+    </div>
+    <div class="tright">
+      <div class="ldot"><div class="pdot" id="pdot" style="background:var(--txm);box-shadow:none;animation-play-state:paused;"></div><span id="lbl" style="color:var(--txm)">BASELINE</span></div>
+      <div class="clk" id="clk">--:--</div>
+    </div>
+  </header>
+  <div id="ticker"><div class="tt" id="ttrack"></div></div>
+  <div id="mobnav">
+    <div class="mobtabs">
+      <div class="mobtab act" onclick="mobSwitch('lp',this)">STOCKS</div>
+      <div class="mobtab" onclick="mobSwitch('cp',this)">CHART</div>
+      <div class="mobtab" onclick="mobSwitch('rp',this)">ORACLE AI</div>
+    </div>
+  </div>
+  <div id="ws">
+    <div id="lp">
+      <div class="lphdr"><div class="lpttl">Equities · NSE</div><span id="lstatus">Baseline</span></div>
+      <input class="srch" id="srch" placeholder="Search symbol…" oninput="filterList(this.value)">
+      <div class="slist" id="slist"></div>
+      <div class="seclbl">Sector Heat</div>
+      <div id="sectors"></div>
+    </div>
+    <div id="cp" class="mob-hidden">
+      <div class="cphdr">
+        <div><div class="hsym" id="hsym">AURUM</div><div class="hnm" id="hnm">Select a stock from the left panel</div></div>
+        <div><div class="hpx" id="hpx">—</div><div class="hch" id="hch" style="color:var(--txm)">—</div></div>
+      </div>
+      <div class="freshbar"><div class="fdot" id="fdot" style="background:var(--txl)"></div><span id="ftext">BASELINE DATA · NSE APRIL 2026</span></div>
+      <div class="stats">
+        <div class="sc"><div class="scl">Open</div><div class="scv" id="v0">—</div></div>
+        <div class="sc"><div class="scl">Day High</div><div class="scv" id="v1">—</div></div>
+        <div class="sc"><div class="scl">Day Low</div><div class="scv" id="v2">—</div></div>
+        <div class="sc"><div class="scl">52W High</div><div class="scv" id="v3">—</div></div>
+        <div class="sc"><div class="scl">52W Low</div><div class="scv" id="v4">—</div></div>
+        <div class="sc"><div class="scl">P/E</div><div class="scv" id="v5">—</div></div>
+      </div>
+      <div id="range-bar-wrap" style="padding:8px 13px 8px;border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:14px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;align-items:baseline;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:2px;color:var(--txl);">52-WEEK PRICE RANGE</span>
+            <span id="rng-pct" style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--txm);">—</span>
+          </div>
+          <div style="position:relative;height:6px;margin-bottom:2px;">
+            <div id="rng-tick" style="position:absolute;top:0;width:2px;height:6px;border-radius:1px;background:var(--tx);transform:translateX(-50%);left:0%;transition:left .7s ease;opacity:.9;"></div>
+          </div>
+          <div style="height:5px;border-radius:3px;background:linear-gradient(to right,#CC4250,#C8982C 45%,#38B86E);opacity:.75;position:relative;"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:3px;">
+            <span id="rng-lo" style="font-family:'IBM Plex Mono',monospace;font-size:6px;color:#CC4250;">52W L</span>
+            <span id="rng-hi" style="font-family:'IBM Plex Mono',monospace;font-size:6px;color:#38B86E;">52W H</span>
+          </div>
+        </div>
+        <div id="news-sent-pill" style="display:none;" aria-hidden="true"></div>
+      </div>
+      <div class="chartsec">
+        <div class="rrow">
+          <div class="rngs">
+            <button class="rb act" data-r="1mo">1M</button>
+            <button class="rb" data-r="3mo">3M</button>
+            <button class="rb" data-r="6mo">6M</button>
+            <button class="rb" data-r="1y">1Y</button>
+            <button class="rb" data-r="2y">2Y</button>
+            <button class="rb" data-r="5y">5Y</button>
+          </div>
+          <div class="cmeta" id="cmeta">SELECT A STOCK</div>
+        </div>
+        <div class="cw" id="chartWrap">
+          <div class="cst" id="cst">SELECT A STOCK TO VIEW CHART</div>
+          <canvas id="chart" style="display:none;" height="260"></canvas>
+        </div>
+      </div>
+    </div>
+    <div id="rp" class="mob-hidden">
+      <div class="rphdr">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div><div class="rpttl">⚡ AURUM ORACLE</div><div class="rpsub" id="rsub">AI Financial Analyst · NSE India</div></div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <button id="modeBtn" onclick="toggleMode()" style="padding:3px 9px;border:1px solid var(--ln);background:rgba(200,152,44,.1);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:2px;border-radius:3px;cursor:pointer;transition:all .2s;">EXPERT</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;padding:6px 12px 0;">
+        <div style="display:flex;gap:4px;margin-bottom:6px">
+          <button id="hz-short" onclick="setHorizon('short')" style="flex:1;padding:5px 0;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;border-radius:3px;cursor:pointer;transition:all .2s;background:var(--gold);color:#000;border:none;font-weight:700">⚡ SHORT</button>
+          <button id="hz-long" onclick="setHorizon('long')" style="flex:1;padding:5px 0;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;border-radius:3px;cursor:pointer;transition:all .2s;background:transparent;color:var(--txl);border:1px solid var(--ln)">📅 LONG</button>
+        </div>
+        <button class="ofbtn" id="ofbtn" onclick="fireOracle()" disabled style="flex:1;margin:0;">▶ GENERATE FORECAST</button>
+        <button id="watch-btn" onclick="if(SEL)toggleWatch(SEL.sym)" title="Add to watchlist" style="padding:0 12px;border:1px solid var(--ln);background:rgba(200,152,44,.08);color:var(--txl);font-size:14px;border-radius:4px;cursor:pointer;transition:all .2s;" disabled>☆</button>
+      </div>
+      <div class="rpbody" id="rbody">
+        <div class="est">
+          <strong style="color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:16px;letter-spacing:2px;">HOW TO USE</strong><br><br>
+          <strong style="color:var(--tx);">1.</strong> Click any stock on the left<br>
+          <strong style="color:var(--tx);">2.</strong> Choose mode: <span style="color:var(--gold);">BEGINNER</span> or <span style="color:var(--gold);">EXPERT</span><br>
+          <strong style="color:var(--tx);">3.</strong> Press <strong style="color:var(--gold);">▶ GENERATE FORECAST</strong><br><br>
+          <span style="color:var(--txm);font-size:11px;">
+          · Backend AI Oracle via Claude API<br>
+          · 5-factor hedge-fund scoring<br>
+          · Live news via NewsAPI<br>
+          · ★ Watchlist · 📝 Notes per stock
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="frontend.js"></script>
+</body>
+</html>
